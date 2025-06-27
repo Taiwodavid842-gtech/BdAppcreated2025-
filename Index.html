@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Birthday Card Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --primary: #FF6B6B;
+      --secondary: #4ECDC4;
+      --accent: #FFE66D;
+      --light: #F7FFF7;
+      --dark: #292F36;
+      --text: #4A4A4A;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+    
+    .app-container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 1rem;
+      position: relative;
+      z-index: 10;
+    }
+    
+    /* Form Styling */
+    .form-container {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    
+    input, textarea, select {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+    }
+    
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .image-preview {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    
+    .preview-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 1/1;
+      background: #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .preview-item img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    
+    .remove-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+    }
+    
+    .btn-download {
+      background: var(--secondary);
+      margin-left: 1rem;
+    }
+    
+    .btn-download:hover {
+      box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+    }
+    
+    /* Card Preview Styling */
+    .card-preview {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-top: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .preview-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .preview-title {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2.5rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .preview-subtitle {
+      font-size: 1.2rem;
+      color: var(--dark);
+      opacity: 0.8;
+    }
+    
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin: 2rem 0;
+    }
+    
+    .preview-card {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      aspect-ratio: 1/1;
+    }
+    
+    .preview-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .preview-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+      color: white;
+      padding: 1rem;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    
+    .preview-message {
+      background: var(--light);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      position: relative;
+    }
+    
+    .preview-footer {
+      text-align: center;
+      font-style: italic;
+      color: var(--dark);
+      opacity: 0.8;
+    }
+    
+    /* Bubbles */
+    .bubbles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: hidden;
+    }
+    
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      animation: float linear infinite;
+    }
+    
+    @keyframes float {
+      0% {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: translateY(-100vh) scale(1);
+        opacity: 0;
+      }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .image-preview, .preview-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .btn-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .btn {
+        width: 100%;
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bubbles" id="bubbles"></div>
+  
+  <div class="app-container">
+    <h1 style="text-align: center; margin-bottom: 1rem; color: var(--primary);">Birthday Card Generator</h1>
+    <p style="text-align: center; margin-bottom: 2rem;">Create a personalized birthday card to share!</p>
+    
+    <div class="form-container">
+      <div class="form-group">
+        <label for="celebrantName">Celebrant's Name</label>
+        <input type="text" id="celebrantName" placeholder="Enter the birthday person's name">
+      </div>
+      
+      <div class="form-group">
+        <label for="birthdayMessage">Birthday Message</label>
+        <textarea id="birthdayMessage" placeholder="Enter your birthday message"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="signature">Your Name/Signature</label>
+        <input type="text" id="signature" placeholder="Enter your name">
+      </div>
+      
+      <div class="form-group">
+        <label>Upload Photos (up to 4)</label>
+        <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
+        <button class="btn" onclick="document.getElementById('photoUpload').click()">Select Photos</button>
+        <div class="image-preview" id="imagePreview"></div>
+      </div>
+      
+      <div class="form-group">
+        <label for="photoCaptions">Photo Captions (comma separated)</label>
+        <input type="text" id="photoCaptions" placeholder="e.g., Smart, Funny, Kind, Amazing">
+      </div>
+      
+      <div class="form-group">
+        <label for="musicFile">Background Music (optional)</label>
+        <input type="file" id="musicFile" accept="audio/*" style="display: none;">
+        <button class="btn" onclick="document.getElementById('musicFile').click()">Select Music</button>
+        <audio id="audioPlayer" controls style="width: 100%; margin-top: 1rem; display: none;"></audio>
+      </div>
+      
+      <div class="btn-container" style="display: flex; justify-content: center;">
+        <button class="btn" id="generateBtn">Generate Card</button>
+        <button class="btn btn-download" id="downloadBtn" disabled>Download as Image</button>
+      </div>
+    </div>
+    
+    <div class="card-preview" id="cardPreview" style="display: none;">
+      <div class="preview-header">
+        <h2 class="preview-title">Happy Birthday <span id="previewName">Name</span>! 🎂</h2>
+        <p class="preview-subtitle" id="previewSubtitle">The lord bless your new year, Age graciously 🙏</p>
+      </div>
+      
+      <div class="preview-grid" id="previewGrid"></div>
+      
+      <div class="preview-message">
+        <p id="previewMessage">Your birthday message will appear here.</p>
+      </div>
+      
+      <p class="preview-footer">From <span id="previewSignature">Your Name</span></p>
+    </div>
+  </div>
+  
+  <script>
+    // DOM Elements
+    const celebrantName = document.getElementById('celebrantName');
+    const birthdayMessage = document.getElementById('birthdayMessage');
+    const signature = document.getElementById('signature');
+    const photoUpload = document.getElementById('photoUpload');
+    const photoCaptions = document.getElementById('photoCaptions');
+    const musicFile = document.getElementById('musicFile');
+    const audioPlayer = document.getElementById('audioPlayer');
+    const generateBtn = document.getElementById('generateBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const cardPreview = document.getElementById('cardPreview');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewGrid = document.getElementById('previewGrid');
+    const previewName = document.getElementById('previewName');
+    const previewSubtitle = document.getElementById('previewSubtitle');
+    const previewMessage = document.getElementById('previewMessage');
+    const previewSignature = document.getElementById('previewSignature');
+    
+    // State
+    let uploadedImages = [];
+    let audioFile = null;
+    
+    // Event Listeners
+    photoUpload.addEventListener('change', handleImageUpload);
+    musicFile.addEventListener('change', handleMusicUpload);
+    generateBtn.addEventListener('click', generateCard);
+    downloadBtn.addEventListener('click', downloadCard);
+    
+    // Functions
+    function handleImageUpload(e) {
+      const files = e.target.files;
+      imagePreview.innerHTML = '';
+      uploadedImages = [];
+      
+      for (let i = 0; i < Math.min(files.length, 4); i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+          const imgContainer = document.createElement('div');
+          imgContainer.className = 'preview-item';
+          
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          
+          const removeBtn = document.createElement('button');
+          removeBtn.className = 'remove-btn';
+          removeBtn.innerHTML = '×';
+          removeBtn.addEventListener('click', () => removeImage(i));
+          
+          imgContainer.appendChild(img);
+          imgContainer.appendChild(removeBtn);
+          imagePreview.appendChild(imgContainer);
+          
+          uploadedImages.push(event.target.result);
+        };
+        
+        reader.readAsDataURL(file);
+      }
+    }
+    
+    function removeImage(index) {
+      uploadedImages.splice(index, 1);
+      const previewItems = document.querySelectorAll('.preview-item');
+      previewItems[index].remove();
+      
+      // Reassign event listeners after removal
+      const newPreviewItems = document.querySelectorAll('.preview-item');
+      newPreviewItems.forEach((item, i) => {
+        const removeBtn = item.querySelector('.remove-btn');
+        removeBtn.onclick = () => removeImage(i);
+      });
+    }
+    
+    function handleMusicUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      audioFile = URL.createObjectURL(file);
+      audioPlayer.src = audioFile;
+      audioPlayer.style.display = 'block';
+    }
+    
+    function generateCard() {
+      // Update preview with user inputs
+      previewName.textContent = celebrantName.value || 'Friend';
+      previewMessage.textContent = birthdayMessage.value || 'Wishing you a wonderful birthday filled with joy and happiness!';
+      previewSignature.textContent = signature.value || 'Your Friend';
+      
+      // Update photo grid
+      previewGrid.innerHTML = '';
+      const captions = photoCaptions.value ? photoCaptions.value.split(',') : [];
+      
+      uploadedImages.forEach((img, index) => {
+        const card = document.createElement('div');
+        card.className = 'preview-card';
+        
+        const imgEl = document.createElement('img');
+        imgEl.src = img;
+        
+        const caption = document.createElement('div');
+        caption.className = 'preview-caption';
+        caption.textContent = captions[index]?.trim() || `Photo ${index + 1}`;
+        
+        card.appendChild(imgEl);
+        card.appendChild(caption);
+        previewGrid.appendChild(card);
+      });
+      
+      // Show the preview
+      cardPreview.style.display = 'block';
+      downloadBtn.disabled = false;
+      
+      // Scroll to preview
+      cardPreview.scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function downloadCard() {
+      // Temporarily hide the download button during capture
+      downloadBtn.style.display = 'none';
+      
+      html2canvas(cardPreview).then(canvas => {
+        // Create download link
+        const link = document.createElement('a');
+        link.download = `birthday-card-${celebrantName.value || 'friend'}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        // Restore download button
+        downloadBtn.style.display = 'inline-flex';
+      });
+    }
+    
+    // Create bubbles
+    function createBubbles() {
+      const bubblesContainer = document.getElementById('bubbles');
+      const bubbleCount = 20;
+      
+      for (let i = 0; i < bubbleCount; i++) {
+        const bubble = document.createElement('div');
+        bubble.classList.add('bubble');
+        
+        const size = Math.random() * 30 + 10;
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        bubble.style.left = `${Math.random() * 100}vw`;
+        
+        const duration = Math.random() * 10 + 10;
+        bubble.style.animationDuration = `${duration}s`;
+        bubble.style.animationDelay = `${Math.random() * 10}s`;
+        bubble.style.opacity = Math.random() * 0.3 + 0.1;
+        
+        bubblesContainer.appendChild(bubble);
+      }
+    }
+    
+    // Initialize
+    window.addEventListener('load', createBubbles);
+    window.addEventListener('resize', () => {
+      document.getElementById('bubbles').innerHTML = '';
+      createBubbles();
+    });
+  </script>
+</body>
+</html>
