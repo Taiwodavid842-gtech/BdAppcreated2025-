@@ -862,456 +862,333 @@
   
   <script>
     // DOM Elements
-    const celebrantName = document.getElementById('celebrantName');
-    const birthdayTheme = document.getElementById('birthdayTheme');
-    const birthdayMessage = document.getElementById('birthdayMessage');
-    const signature = document.getElementById('signature');
-    const photoUpload = document.getElementById('photoUpload');
-    const uploadArea = document.getElementById('uploadArea');
-    const musicUploadArea = document.getElementById('musicUploadArea');
-    const photoCaptions = document.getElementById('photoCaptions');
-    const musicFile = document.getElementById('musicFile');
-    const audioPlayer = document.getElementById('audioPlayer');
-    const generateBtn = document.getElementById('generateBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const previewModal = document.getElementById('previewModal');
-    const closePreview = document.getElementById('closePreview');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const shareBtn = document.getElementById('shareBtn');
-    const imagePreview = document.getElementById('imagePreview');
-    const previewGrid = document.getElementById('previewGrid');
-    const previewName = document.getElementById('previewName');
-    const previewSubtitle = document.getElementById('previewSubtitle');
-    const previewMessage = document.getElementById('previewMessage');
-    const previewSignature = document.getElementById('previewSignature');
-    const floatingElements = document.getElementById('floatingElements');
+const celebrantName = document.getElementById('celebrantName');
+const birthdayTheme = document.getElementById('birthdayTheme');
+const birthdayMessage = document.getElementById('birthdayMessage');
+const signature = document.getElementById('signature');
+const photoUpload = document.getElementById('photoUpload');
+const uploadArea = document.getElementById('uploadArea');
+const musicUploadArea = document.getElementById('musicUploadArea');
+const photoCaptions = document.getElementById('photoCaptions');
+const musicFile = document.getElementById('musicFile');
+const audioPlayer = document.getElementById('audioPlayer');
+const generateBtn = document.getElementById('generateBtn');
+const resetBtn = document.getElementById('resetBtn');
+const previewModal = document.getElementById('previewModal');
+const closePreview = document.getElementById('closePreview');
+const downloadBtn = document.getElementById('downloadBtn');
+const shareBtn = document.getElementById('shareBtn');
+const imagePreview = document.getElementById('imagePreview');
+const previewGrid = document.getElementById('previewGrid');
+const previewName = document.getElementById('previewName');
+const previewSubtitle = document.getElementById('previewSubtitle');
+const previewMessage = document.getElementById('previewMessage');
+const previewSignature = document.getElementById('previewSignature');
+const floatingElements = document.getElementById('floatingElements');
+
+// State
+let uploadedImages = [];
+let audioFile = null;
+
+// Event Listeners
+uploadArea.addEventListener('click', () => photoUpload.click());
+musicUploadArea.addEventListener('click', () => musicFile.click());
+photoUpload.addEventListener('change', handleImageUpload);
+musicFile.addEventListener('change', handleMusicUpload);
+generateBtn.addEventListener('click', generateCard);
+resetBtn.addEventListener('click', resetForm);
+closePreview.addEventListener('click', closePreviewModal);
+downloadBtn.addEventListener('click', downloadCard);
+shareBtn.addEventListener('click', shareCard);
+
+// Functions
+function handleImageUpload(e) {
+  const files = e.target.files;
+  imagePreview.innerHTML = '';
+  uploadedImages = [];
+  
+  createFloatingElements(files.length > 0 ? files.length : 4);
+  
+  for (let i = 0; i < Math.min(files.length, 4); i++) {
+    const file = files[i];
+    const reader = new FileReader();
     
-    // State
-    let uploadedImages = [];
-    let audioFile = null;
-    
-    // Event Listeners
-    uploadArea.addEventListener('click', () => photoUpload.click());
-    musicUploadArea.addEventListener('click', () => musicFile.click());
-    photoUpload.addEventListener('change', handleImageUpload);
-    musicFile.addEventListener('change', handleMusicUpload);
-    generateBtn.addEventListener('click', generateCard);
-    resetBtn.addEventListener('click', resetForm);
-    closePreview.addEventListener('click', closePreviewModal);
-    downloadBtn.addEventListener('click', downloadCard);
-    shareBtn.addEventListener('click', shareCard);
-    
-    // Functions
-    function handleImageUpload(e) {
-      const files = e.target.files;
-      imagePreview.innerHTML = '';
-      uploadedImages = [];
+    reader.onload = function(event) {
+      const imgContainer = document.createElement('div');
+      imgContainer.className = 'preview-item';
       
-      // Create floating elements based on number of photos
-      createFloatingElements(files.length > 0 ? files.length : 4);
+      const img = document.createElement('img');
+      img.src = event.target.result;
       
-      for (let i = 0; i < Math.min(files.length, 4); i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        
-        reader.onload = function(event) {
-          const imgContainer = document.createElement('div');
-          imgContainer.className = 'preview-item';
-          
-          const img = document.createElement('img');
-          img.src = event.target.result;
-          
-          const removeBtn = document.createElement('button');
-          removeBtn.className = 'remove-btn';
-          removeBtn.innerHTML = '×';
-          removeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeImage(i);
-          });
-          
-          imgContainer.appendChild(img);
-          imgContainer.appendChild(removeBtn);
-          imagePreview.appendChild(imgContainer);
-          
-          uploadedImages.push({
-            src: event.target.result,
-            file: file
-          });
-        };
-        
-        reader.readAsDataURL(file);
-      }
-      
-      // Update upload area text if files were selected
-      if (files.length > 0) {
-        const uploadText = uploadArea.querySelector('.upload-text');
-        uploadText.textContent = `${files.length} photo${files.length > 1 ? 's' : ''} selected`;
-        
-        if (files.length > 4) {
-          const uploadSubtext = uploadArea.querySelector('.upload-subtext');
-          uploadSubtext.textContent = `(Showing first 4 of ${files.length} images)`;
-          uploadSubtext.style.color = 'var(--primary)';
-        }
-      }
-    }
-    
-    function removeImage(index) {
-      uploadedImages.splice(index, 1);
-      const previewItems = document.querySelectorAll('.preview-item');
-      previewItems[index].remove();
-      
-      // Update file input
-      const dataTransfer = new DataTransfer();
-      uploadedImages.forEach(img => {
-        dataTransfer.items.add(img.file);
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.innerHTML = '×';
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        removeImage(i);
       });
-      photoUpload.files = dataTransfer.files;
       
-      // Update upload area text
-      const uploadText = uploadArea.querySelector('.upload-text');
+      imgContainer.appendChild(img);
+      imgContainer.appendChild(removeBtn);
+      imagePreview.appendChild(imgContainer);
+      
+      uploadedImages.push({
+        src: event.target.result,
+        file: file
+      });
+    };
+    
+    reader.readAsDataURL(file);
+  }
+  
+  if (files.length > 0) {
+    const uploadText = uploadArea.querySelector('.upload-text');
+    uploadText.textContent = `${files.length} photo${files.length > 1 ? 's' : ''} selected`;
+    
+    if (files.length > 4) {
       const uploadSubtext = uploadArea.querySelector('.upload-subtext');
-      uploadText.textContent = uploadedImages.length > 0 ? 
-        `${uploadedImages.length} photo${uploadedImages.length > 1 ? 's' : ''} selected` : 
-        'Click to upload photos';
-      uploadSubtext.textContent = '(Up to 4 high-quality images)';
-      uploadSubtext.style.color = '';
+      uploadSubtext.textContent = `(Showing first 4 of ${files.length} images)`;
+      uploadSubtext.style.color = 'var(--primary)';
     }
+  }
+}
+
+function removeImage(index) {
+  uploadedImages.splice(index, 1);
+  const previewItems = document.querySelectorAll('.preview-item');
+  previewItems[index].remove();
+  
+  const dataTransfer = new DataTransfer();
+  uploadedImages.forEach(img => {
+    dataTransfer.items.add(img.file);
+  });
+  photoUpload.files = dataTransfer.files;
+  
+  const uploadText = uploadArea.querySelector('.upload-text');
+  const uploadSubtext = uploadArea.querySelector('.upload-subtext');
+  uploadText.textContent = uploadedImages.length > 0 ? 
+    `${uploadedImages.length} photo${uploadedImages.length > 1 ? 's' : ''} selected` : 
+    'Click to upload photos';
+  uploadSubtext.textContent = '(Up to 4 high-quality images)';
+  uploadSubtext.style.color = '';
+}
+
+function handleMusicUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  audioFile = URL.createObjectURL(file);
+  audioPlayer.src = audioFile;
+  audioPlayer.style.display = 'block';
+  
+  const uploadText = musicUploadArea.querySelector('.upload-text');
+  uploadText.textContent = file.name;
+}
+
+function createFloatingElements(count) {
+  floatingElements.innerHTML = '';
+  const elements = ['🎈', '🎉', '🎁', '✨', '🥂', '🎂', '💝', '🎊'];
+  
+  for (let i = 0; i < count * 2; i++) {
+    const element = document.createElement('div');
+    element.className = 'floating-element';
+    element.textContent = elements[Math.floor(Math.random() * elements.length)];
+    element.style.left = `${Math.random() * 100}%`;
+    element.style.top = `${Math.random() * 100}%`;
+    element.style.fontSize = `${Math.random() * 2 + 1.5}rem`;
+    element.style.animationDuration = `${Math.random() * 10 + 10}s`;
+    element.style.animationDelay = `${Math.random() * 5}s`;
+    floatingElements.appendChild(element);
+  }
+}
+
+function generateCard() {
+  if (!celebrantName.value.trim()) {
+    alert('Please enter the birthday person\'s name');
+    celebrantName.focus();
+    return;
+  }
+  
+  previewName.textContent = celebrantName.value.trim();
+  applyTheme(birthdayTheme.value);
+  
+  const message = birthdayMessage.value.trim() || 
+    'Wishing you a day filled with joy, laughter, and all the happiness you bring to others!';
+  previewMessage.innerHTML = formatMessage(message);
+  
+  previewSignature.textContent = signature.value.trim() || 'Your Friend';
+  
+  previewGrid.innerHTML = '';
+  const captions = photoCaptions.value ? 
+    photoCaptions.value.split(',').map(c => c.trim()) : 
+    [];
+  
+  uploadedImages.forEach((img, index) => {
+    const card = document.createElement('div');
+    card.className = 'preview-card';
     
-    function handleMusicUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      
-      audioFile = URL.createObjectURL(file);
-      audioPlayer.src = audioFile;
-      audioPlayer.style.display = 'block';
-      
-      // Update music upload area text
-      const uploadText = musicUploadArea.querySelector('.upload-text');
-      uploadText.textContent = file.name;
-    }
+    const imgEl = document.createElement('img');
+    imgEl.src = img.src;
+    imgEl.loading = 'lazy';
     
-    function createFloatingElements(count) {
-      floatingElements.innerHTML = '';
-      const elements = ['🎈', '🎉', '🎁', '✨', '🥂', '🎂', '💝', '🎊'];
-      
-      for (let i = 0; i < count * 2; i++) {
-        const element = document.createElement('div');
-        element.className = 'floating-element';
-        element.textContent = elements[Math.floor(Math.random() * elements.length)];
-        element.style.left = `${Math.random() * 100}%`;
-        element.style.top = `${Math.random() * 100}%`;
-        element.style.fontSize = `${Math.random() * 2 + 1.5}rem`;
-        element.style.animationDuration = `${Math.random() * 10 + 10}s`;
-        element.style.animationDelay = `${Math.random() * 5}s`;
-        floatingElements.appendChild(element);
-      }
-    }
+    const caption = document.createElement('div');
+    caption.className = 'preview-caption';
+    caption.textContent = captions[index] || `Memory ${index + 1}`;
     
-    function generateCard() {
-      if (!celebrantName.value.trim()) {
-        alert('Please enter the birthday person\'s name');
-        celebrantName.focus();
-        return;
-      }
-      
-      // Update preview with user inputs
-      previewName.textContent = celebrantName.value.trim();
-      
-      // Apply theme
-      applyTheme(birthdayTheme.value);
-      
-      // Update message
-      const message = birthdayMessage.value.trim() || 
-        'Wishing you a day filled with joy, laughter, and all the happiness you bring to others!';
-      previewMessage.innerHTML = formatMessage(message);
-      
-      // Update signature
-      previewSignature.textContent = signature.value.trim() || 'Your Friend';
-      
-      // Update photo grid
-      previewGrid.innerHTML = '';
-      const captions = photoCaptions.value ? 
-        photoCaptions.value.split(',').map(c => c.trim()) : 
-        [];
-      
-      uploadedImages.forEach((img, index) => {
-        const card = document.createElement('div');
-        card.className = 'preview-card';
-        
-        const imgEl = document.createElement('img');
-        imgEl.src = img.src;
-        imgEl.loading = 'lazy';
-        
-        const caption = document.createElement('div');
-        caption.className = 'preview-caption';
-        caption.textContent = captions[index] || `Memory ${index + 1}`;
-        
-        card.appendChild(imgEl);
-        card.appendChild(caption);
-        previewGrid.appendChild(card);
-      });
-      
-      // Show the preview modal
-      previewModal.classList.add('show');
-      document.body.style.overflow = 'hidden';
-      
-      // Trigger confetti if audio is playing
-      if (!audioPlayer.paused) {
-        triggerConfetti();
-      }
-    }
-    
-    function applyTheme(theme) {
-      const cardPreview = document.querySelector('.card-preview');
-      
-      // Reset all themes
-      cardPreview.classList.remove('theme-elegant', 'theme-modern', 'theme-fun', 'theme-romantic');
-      
-      // Apply selected theme
-      switch(theme) {
-        case 'elegant':
-          cardPreview.classList.add('theme-elegant');
-          previewSubtitle.textContent = 'Wishing you a day as wonderful as you are';
-          break;
-        case 'modern':
-          cardPreview.classList.add('theme-modern');
-          previewSubtitle.textContent = 'Celebrating you today and always';
-          break;
-        case 'fun':
-          cardPreview.classList.add('theme-fun');
-          previewSubtitle.textContent = 'Let\'s party! It\'s your special day!';
-          break;
-        case 'romantic':
-          cardPreview.classList.add('theme-romantic');
-          previewSubtitle.textContent = 'To the one who makes every day brighter';
-          break;
-        default:
-          previewSubtitle.textContent = 'The lord bless your new year, Age graciously 🙏';
-      }
-    }
-    
-    function formatMessage(message) {
-      // Simple formatting - you could enhance this with markdown or more complex formatting
-      return message
-        .split('\n')
-        .map(paragraph => paragraph.trim() ? `<p>${paragraph}</p>` : '')
-        .join('');
-    }
-    
-    function triggerConfetti() {
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#FF6B6B', '#4ECDC4', '#FFE66D', '#D4AF37']
-      });
-      
-      setTimeout(triggerConfetti, 2000);
-    }
-    
-    function closePreviewModal() {
-      previewModal.classList.remove('show');
-      document.body.style.overflow = '';
-      audioPlayer.pause();
-    }
-    
-    function downloadCard() {
-      // Show loading state
-      downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
-      downloadBtn.disabled = true;
-      
-      // Hide buttons during capture
-      const buttons = document.querySelectorAll('.card-preview .btn-container');
-      buttons.forEach(btn => btn.style.display = 'none');
-      
-      // Capture the card
-      html2canvas(document.getElementById('cardPreview'), {
-        scale: 2,
-        logging: false,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: null
-      }).then(canvas => {
-        // Create download link
-        const link = document.createElement('a');
-        link.download = `birthday-card-${celebrantName.value.trim() || 'friend'}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        
-        // Restore buttons
-        buttons.forEach(btn => btn.style.display = '');
-        
-        // Reset button state
-        downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
-        downloadBtn.disabled = false;
-        
-        // Show success effect
-        triggerConfetti();
-      });
-    }
-    
-    function shareCard() {
-      if (navigator.share) {
-        navigator.share({
-          title: `Birthday Card for ${celebrantName.value.trim()}`,
-          text: `Check out this beautiful birthday card I made for ${celebrantName.value.trim()}!`,
-          url: window.location.href
-        }).catch(err => {
-          console.log('Error sharing:', err);
-          alert('Sharing failed. Please try another method.');
-        });
-      } else {
-        alert('Web Share API not supported in your browser. You can download and share the image manually.');
-      }
-    }
-    
-    function resetForm() {
-      celebrantName.value = '';
-      birthdayMessage.value = '';
-      signature.value = '';
-      photoUpload.value = '';
-      musicFile.value = '';
-      audioPlayer.src = '';
-      audioPlayer.style.display = 'none';
-      imagePreview.innerHTML = '';
-      uploadedImages = [];
-      
-      // Reset upload area text
-      const uploadText = uploadArea.querySelector('.upload-text');
-      const uploadSubtext = uploadArea.querySelector('.upload-subtext');
-      uploadText.textContent = 'Click to upload photos';
-      uploadSubtext.textContent = '(Up to 4 high-quality images)';
-      uploadSubtext.style.color = '';
-      
-      // Reset music upload area text
-      const musicUploadText = musicUploadArea.querySelector('.upload-text');
-      musicUploadText.textContent = 'Add a birthday song';
-    }
-    
-    // Initialize floating elements
-    createFloatingElements(4);
-    
-    function downloadCard() {
-  // Show loading state
+    card.appendChild(imgEl);
+    card.appendChild(caption);
+    previewGrid.appendChild(card);
+  });
+  
+  previewModal.classList.add('show');
+  document.body.style.overflow = 'hidden';
+  
+  if (!audioPlayer.paused) {
+    triggerConfetti();
+  }
+}
+
+function applyTheme(theme) {
+  const cardPreview = document.querySelector('.card-preview');
+  cardPreview.classList.remove('theme-elegant', 'theme-modern', 'theme-fun', 'theme-romantic');
+  
+  switch(theme) {
+    case 'elegant':
+      cardPreview.classList.add('theme-elegant');
+      previewSubtitle.textContent = 'Wishing you a day as wonderful as you are';
+      break;
+    case 'modern':
+      cardPreview.classList.add('theme-modern');
+      previewSubtitle.textContent = 'Celebrating you today and always';
+      break;
+    case 'fun':
+      cardPreview.classList.add('theme-fun');
+      previewSubtitle.textContent = 'Let\'s party! It\'s your special day!';
+      break;
+    case 'romantic':
+      cardPreview.classList.add('theme-romantic');
+      previewSubtitle.textContent = 'To the one who makes every day brighter';
+      break;
+    default:
+      previewSubtitle.textContent = 'The lord bless your new year, Age graciously 🙏';
+  }
+}
+
+function formatMessage(message) {
+  return message
+    .split('\n')
+    .map(paragraph => paragraph.trim() ? `<p>${paragraph}</p>` : '')
+    .join('');
+}
+
+function triggerConfetti() {
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ['#FF6B6B', '#4ECDC4', '#FFE66D', '#D4AF37']
+  });
+  
+  setTimeout(triggerConfetti, 2000);
+}
+
+function closePreviewModal() {
+  previewModal.classList.remove('show');
+  document.body.style.overflow = '';
+  audioPlayer.pause();
+}
+
+function downloadCard() {
   downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
   downloadBtn.disabled = true;
   
-  // Hide elements we don't want in the capture
-  const floatingElements = document.getElementById('floatingElements');
-  const buttons = document.querySelectorAll('.card-preview .btn-container');
-  const originalDisplay = floatingElements.style.display;
+  const elementsToHide = [
+    floatingElements,
+    document.querySelector('.close-preview'),
+    document.querySelector('.btn-container')
+  ];
   
-  floatingElements.style.display = 'none';
-  buttons.forEach(btn => btn.style.display = 'none');
+  const originalDisplays = elementsToHide.map(el => el.style.display);
+  elementsToHide.forEach(el => el.style.display = 'none');
   
-  // Capture the card with optimized settings
-  html2canvas(document.getElementById('cardPreview'), {
-    scale: 1.5, // Reduced from 2 for smaller file size
+  const cardContent = document.getElementById('cardPreview');
+  const padding = 20;
+  
+  html2canvas(cardContent, {
+    scale: 0.8,
+    width: cardContent.scrollWidth + padding,
+    height: cardContent.scrollHeight + padding,
+    scrollX: 0,
+    scrollY: 0,
     logging: false,
     useCORS: true,
-    allowTaint: true,
     backgroundColor: null,
-    quality: 0.92, // Good balance between quality and size
-    windowWidth: document.getElementById('cardPreview').scrollWidth,
-    windowHeight: document.getElementById('cardPreview').scrollHeight
+    quality: 0.9
   }).then(canvas => {
-    // Create download link
     const link = document.createElement('a');
-    link.download = `birthday-card-${celebrantName.value.trim() || 'friend'}.png`;
-    link.href = canvas.toDataURL('image/png', 0.92); // 0.92 quality
+    link.download = `birthday-card-for-${celebrantName.value.trim() || 'someone-special'}.jpg`;
+    link.href = canvas.toDataURL('image/jpeg', 0.85);
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
     
-    // Restore hidden elements
-    floatingElements.style.display = originalDisplay;
-    buttons.forEach(btn => btn.style.display = '');
+    elementsToHide.forEach((el, index) => {
+      el.style.display = originalDisplays[index];
+    });
     
-    // Reset button state
     downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
     downloadBtn.disabled = false;
     
-    // Show success effect
     triggerConfetti();
   }).catch(err => {
     console.error('Error generating image:', err);
-    // Restore elements even if error occurs
-    floatingElements.style.display = originalDisplay;
-    buttons.forEach(btn => btn.style.display = '');
+    elementsToHide.forEach((el, index) => {
+      el.style.display = originalDisplays[index];
+    });
     downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
     downloadBtn.disabled = false;
     alert('Error generating image. Please try again.');
   });
 }
-    function downloadCard() {
-  // Show loading state
-  downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
-  downloadBtn.disabled = true;
-  
-  // Hide elements we don't want in the capture
-  const elementsToHide = [
-    document.getElementById('floatingElements'),
-    document.querySelector('.close-preview'),
-    document.querySelector('.btn-container')
-  ];
-  
-  // Store original display states
-  const originalDisplays = elementsToHide.map(el => el.style.display);
-  elementsToHide.forEach(el => el.style.display = 'none');
-  
-  // Get the preview content dimensions
-  const previewContent = document.getElementById('cardPreview');
-  const originalWidth = previewContent.scrollWidth;
-  const originalHeight = previewContent.scrollHeight;
-  
-  // Calculate scaled dimensions (60% of original)
-  const scale = 0.6;
-  const scaledWidth = originalWidth * scale;
-  const scaledHeight = originalHeight * scale;
-  
-  // Capture the card with optimized settings
-  html2canvas(previewContent, {
-    scale: scale,
-    width: scaledWidth,
-    height: scaledHeight,
-    logging: false,
-    useCORS: true,
-    allowTaint: true,
-    backgroundColor: null,
-    quality: 0.9,
-    scrollX: 0,
-    scrollY: 0,
-    windowWidth: originalWidth,
-    windowHeight: originalHeight
-  }).then(canvas => {
-    // Create download link
-    const link = document.createElement('a');
-    link.download = `birthday-wish-for-${celebrantName.value.trim() || 'friend'}.jpg`;
-    
-    // Convert to JPG for smaller file size (optional)
-    link.href = canvas.toDataURL('image/jpeg', 0.85);
-    link.click();
-    
-    // Restore hidden elements
-    elementsToHide.forEach((el, index) => {
-      el.style.display = originalDisplays[index];
+
+function shareCard() {
+  if (navigator.share) {
+    navigator.share({
+      title: `Birthday Card for ${celebrantName.value.trim()}`,
+      text: `Check out this beautiful birthday card I made for ${celebrantName.value.trim()}!`,
+      url: window.location.href
+    }).catch(err => {
+      console.log('Error sharing:', err);
+      alert('Sharing failed. Please try another method.');
     });
-    
-    // Reset button state
-    downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
-    downloadBtn.disabled = false;
-    
-    // Show success effect
-    triggerConfetti();
-  }).catch(err => {
-    console.error('Error generating image:', err);
-    // Restore elements even if error occurs
-    elementsToHide.forEach((el, index) => {
-      el.style.display = originalDisplays[index];
-    });
-    downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
-    downloadBtn.disabled = false;
-    alert('Error generating image. Please try again.');
-  });
-    }
+  } else {
+    alert('Web Share API not supported in your browser. You can download and share the image manually.');
+  }
+}
+
+function resetForm() {
+  celebrantName.value = '';
+  birthdayMessage.value = '';
+  signature.value = '';
+  photoUpload.value = '';
+  musicFile.value = '';
+  audioPlayer.src = '';
+  audioPlayer.style.display = 'none';
+  imagePreview.innerHTML = '';
+  uploadedImages = [];
+  
+  const uploadText = uploadArea.querySelector('.upload-text');
+  const uploadSubtext = uploadArea.querySelector('.upload-subtext');
+  uploadText.textContent = 'Click to upload photos';
+  uploadSubtext.textContent = '(Up to 4 high-quality images)';
+  uploadSubtext.style.color = '';
+  
+  const musicUploadText = musicUploadArea.querySelector('.upload-text');
+  musicUploadText.textContent = 'Add a birthday song';
+}
+
+// Initialize floating elements
+createFloatingElements(4);
   </script>
 </body>
 </html>
