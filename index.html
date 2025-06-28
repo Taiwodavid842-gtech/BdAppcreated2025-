@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Premium Birthday Card Maker</title>
+  <title>Premium Birthday Card Maker | SkillSphere</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;600&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;600&family=Dancing+Script:wght@700&family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -20,6 +21,8 @@
       --text: #4A4A4A;
       --shadow: 0 10px 30px rgba(0,0,0,0.1);
       --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      --header-height: 80px;
+      --footer-height: 60px;
     }
     
     * {
@@ -36,8 +39,64 @@
       line-height: 1.6;
       overflow-x: hidden;
       min-height: 100vh;
+      padding-top: var(--header-height);
+      padding-bottom: var(--footer-height);
+      position: relative;
     }
     
+    /* Header Styles */
+    .main-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: var(--header-height);
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 2px 20px rgba(0,0,0,0.08);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: 0 2rem;
+      backdrop-filter: blur(10px);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    
+    .logo-icon {
+      font-size: 2rem;
+      color: var(--primary);
+      margin-right: 0.75rem;
+    }
+    
+    .logo-text {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--dark);
+      background: linear-gradient(135deg, var(--primary), var(--gold));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    
+    .powered-by {
+      margin-left: auto;
+      font-size: 0.85rem;
+      color: var(--text);
+      opacity: 0.8;
+      font-weight: 500;
+    }
+    
+    .powered-by span {
+      color: var(--primary);
+      font-weight: 700;
+    }
+    
+    /* Main Content */
     .app-container {
       max-width: 1200px;
       margin: 0 auto;
@@ -47,49 +106,63 @@
     
     .app-header {
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
     }
     
     .app-title {
       font-family: 'Playfair Display', serif;
       font-size: clamp(2.5rem, 5vw, 3.5rem);
       color: var(--dark);
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
       background: linear-gradient(135deg, var(--primary), var(--gold));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .app-title::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--gold));
+      border-radius: 4px;
     }
     
     .app-subtitle {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       color: var(--text);
       opacity: 0.8;
       max-width: 700px;
       margin: 0 auto;
     }
     
-    /* Form Styling */
+    /* Compact Form Styling */
     .form-container {
       background: white;
-      border-radius: 24px;
-      padding: 3rem;
-      margin-bottom: 3rem;
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin-bottom: 2rem;
       box-shadow: var(--shadow);
       border: 1px solid rgba(255,255,255,0.3);
       backdrop-filter: blur(10px);
-      background: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.95);
     }
     
     .form-section {
-      margin-bottom: 2.5rem;
+      margin-bottom: 2rem;
     }
     
     .section-title {
       font-family: 'Playfair Display', serif;
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       color: var(--dark);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
       position: relative;
       display: inline-block;
     }
@@ -97,33 +170,33 @@
     .section-title::after {
       content: '';
       position: absolute;
-      bottom: -8px;
+      bottom: -6px;
       left: 0;
-      width: 50px;
+      width: 40px;
       height: 3px;
       background: linear-gradient(90deg, var(--primary), var(--gold));
       border-radius: 3px;
     }
     
     .form-group {
-      margin-bottom: 1.8rem;
+      margin-bottom: 1.5rem;
     }
     
     label {
       display: block;
-      margin-bottom: 0.8rem;
+      margin-bottom: 0.6rem;
       font-weight: 600;
       color: var(--dark);
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
     
     input, textarea, select {
       width: 100%;
-      padding: 1rem;
+      padding: 0.8rem;
       border: 1px solid #e0e0e0;
-      border-radius: 12px;
+      border-radius: 10px;
       font-family: inherit;
-      font-size: 1rem;
+      font-size: 0.95rem;
       transition: var(--transition);
       background: rgba(255,255,255,0.8);
     }
@@ -135,19 +208,19 @@
     }
     
     textarea {
-      min-height: 120px;
+      min-height: 100px;
       resize: vertical;
     }
     
-    /* Image Upload */
+    /* Compact Image Upload */
     .upload-area {
       border: 2px dashed #e0e0e0;
-      border-radius: 16px;
-      padding: 2rem;
+      border-radius: 14px;
+      padding: 1.5rem;
       text-align: center;
       cursor: pointer;
       transition: var(--transition);
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.2rem;
       background: rgba(255,255,255,0.5);
     }
     
@@ -157,44 +230,45 @@
     }
     
     .upload-icon {
-      font-size: 2.5rem;
+      font-size: 2rem;
       color: var(--primary);
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
     }
     
     .upload-text {
       color: var(--text);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.3rem;
+      font-size: 0.95rem;
     }
     
     .upload-subtext {
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       color: #999;
     }
     
     .image-preview {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 1.5rem;
-      margin-top: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
     }
     
     .preview-item {
       position: relative;
-      border-radius: 12px;
+      border-radius: 10px;
       overflow: hidden;
       aspect-ratio: 1/1;
       background: #f5f5f5;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
       transition: var(--transition);
     }
     
     .preview-item:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
     }
     
     .preview-item img {
@@ -205,13 +279,13 @@
     
     .remove-btn {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: 6px;
+      right: 6px;
       background: var(--primary);
       color: white;
       border: none;
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -219,6 +293,7 @@
       cursor: pointer;
       transition: var(--transition);
       opacity: 0.9;
+      font-size: 0.8rem;
     }
     
     .remove-btn:hover {
@@ -226,13 +301,13 @@
       transform: scale(1.1);
     }
     
-    /* Buttons */
+    /* Compact Buttons */
     .btn {
       background: linear-gradient(135deg, var(--primary), var(--gold));
       color: white;
       border: none;
-      padding: 1.2rem 2.5rem;
-      font-size: 1.1rem;
+      padding: 0.9rem 2rem;
+      font-size: 1rem;
       border-radius: 50px;
       cursor: pointer;
       transition: var(--transition);
@@ -271,6 +346,11 @@
       z-index: 2;
     }
     
+    .btn i {
+      margin-right: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
     .btn-secondary {
       background: white;
       color: var(--primary);
@@ -288,27 +368,27 @@
       display: flex;
       justify-content: center;
       gap: 1rem;
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       flex-wrap: wrap;
     }
     
-    /* Card Preview */
+    /* Enhanced Card Preview */
     .card-preview-container {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.9);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 2000;
       opacity: 0;
       pointer-events: none;
       transition: var(--transition);
-      padding: 2rem;
-      backdrop-filter: blur(5px);
+      padding: 1rem;
+      backdrop-filter: blur(8px);
     }
     
     .card-preview-container.show {
@@ -320,10 +400,10 @@
       background: white;
       border-radius: 24px;
       width: 100%;
-      max-width: 800px;
+      max-width: 900px;
       max-height: 90vh;
       overflow-y: auto;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.4);
       position: relative;
       transform: scale(0.95);
       transition: var(--transition);
@@ -335,13 +415,13 @@
     
     .close-preview {
       position: absolute;
-      top: 20px;
-      right: 20px;
+      top: 15px;
+      right: 15px;
       background: var(--primary);
       color: white;
       border: none;
-      width: 40px;
-      height: 40px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -349,14 +429,16 @@
       cursor: pointer;
       z-index: 10;
       transition: var(--transition);
+      font-size: 1.2rem;
     }
     
     .close-preview:hover {
       transform: rotate(90deg);
+      background: var(--gold);
     }
     
     .preview-content {
-      padding: 4rem;
+      padding: 3rem;
       position: relative;
     }
     
@@ -366,23 +448,39 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(135deg, rgba(255,235,215,0.2) 0%, rgba(252,182,159,0.2) 100%);
       z-index: 0;
       opacity: 0.5;
     }
     
+    /* Theme-specific backgrounds */
+    .theme-elegant .preview-bg {
+      background: linear-gradient(135deg, rgba(255,235,215,0.2) 0%, rgba(252,182,159,0.2) 100%);
+    }
+    
+    .theme-modern .preview-bg {
+      background: linear-gradient(135deg, rgba(215,236,255,0.2) 0%, rgba(159,202,252,0.2) 100%);
+    }
+    
+    .theme-fun .preview-bg {
+      background: linear-gradient(135deg, rgba(255,215,215,0.2) 0%, rgba(252,159,159,0.2) 100%);
+    }
+    
+    .theme-romantic .preview-bg {
+      background: linear-gradient(135deg, rgba(255,215,255,0.2) 0%, rgba(252,159,239,0.2) 100%);
+    }
+    
     .preview-header {
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2rem;
       position: relative;
       z-index: 1;
     }
     
     .preview-title {
       font-family: 'Dancing Script', cursive;
-      font-size: clamp(3rem, 6vw, 4.5rem);
+      font-size: clamp(2.5rem, 6vw, 4rem);
       color: var(--dark);
-      margin-bottom: 1rem;
+      margin-bottom: 0.5rem;
       line-height: 1.2;
     }
     
@@ -395,7 +493,7 @@
     }
     
     .preview-subtitle {
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       color: var(--text);
       opacity: 0.8;
       max-width: 600px;
@@ -404,23 +502,23 @@
     
     .preview-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem;
-      margin: 3rem 0;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      margin: 2rem 0;
     }
     
     .preview-card {
       position: relative;
-      border-radius: 16px;
+      border-radius: 14px;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.12);
       aspect-ratio: 1/1;
       transition: var(--transition);
     }
     
     .preview-card:hover {
       transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.2);
     }
     
     .preview-card img {
@@ -441,8 +539,8 @@
       right: 0;
       background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
       color: white;
-      padding: 1.5rem 1rem;
-      font-size: 1rem;
+      padding: 1rem;
+      font-size: 0.9rem;
       text-align: center;
       opacity: 0;
       transition: var(--transition);
@@ -455,8 +553,8 @@
     .preview-message {
       background: white;
       border-radius: 16px;
-      padding: 2.5rem;
-      margin: 3rem 0;
+      padding: 2rem;
+      margin: 2rem 0;
       position: relative;
       z-index: 1;
       box-shadow: 0 5px 20px rgba(0,0,0,0.05);
@@ -475,7 +573,7 @@
     }
     
     .preview-message-text {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       line-height: 1.8;
       position: relative;
     }
@@ -485,16 +583,16 @@
       font-style: italic;
       color: var(--text);
       opacity: 0.8;
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       position: relative;
       z-index: 1;
     }
     
     .preview-signature {
       font-family: 'Dancing Script', cursive;
-      font-size: 2rem;
+      font-size: 1.8rem;
       color: var(--primary);
-      margin-top: 1rem;
+      margin-top: 0.5rem;
       display: inline-block;
     }
     
@@ -533,6 +631,38 @@
       }
     }
     
+    /* Footer */
+    .main-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: var(--footer-height);
+      background: rgba(255,255,255,0.95);
+      box-shadow: 0 -2px 20px rgba(0,0,0,0.05);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+    
+    .footer-content {
+      font-size: 0.9rem;
+      color: var(--text);
+      text-align: center;
+    }
+    
+    .footer-content a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    
+    .footer-content a:hover {
+      text-decoration: underline;
+    }
+    
     /* Responsive */
     @media (max-width: 768px) {
       .form-container {
@@ -540,7 +670,7 @@
       }
       
       .preview-content {
-        padding: 3rem 1.5rem;
+        padding: 2rem 1.5rem;
       }
       
       .btn-container {
@@ -555,6 +685,22 @@
       .image-preview {
         grid-template-columns: repeat(2, 1fr);
       }
+      
+      .main-header {
+        padding: 0 1.5rem;
+      }
+      
+      .logo-icon {
+        font-size: 1.8rem;
+      }
+      
+      .logo-text {
+        font-size: 1.3rem;
+      }
+      
+      .powered-by {
+        font-size: 0.8rem;
+      }
     }
     
     @media (max-width: 480px) {
@@ -565,10 +711,49 @@
       .image-preview {
         grid-template-columns: 1fr;
       }
+      
+      .app-title {
+        font-size: 2rem;
+      }
+      
+      .app-subtitle {
+        font-size: 1rem;
+      }
+      
+      .form-container {
+        padding: 1.5rem 1rem;
+      }
+      
+      .main-header {
+        padding: 0 1rem;
+      }
+      
+      .logo-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+      }
+      
+      .logo-text {
+        font-size: 1.1rem;
+      }
+      
+      .powered-by {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Fixed Header -->
+  <header class="main-header">
+    <a href="#" class="logo">
+      <i class="fas fa-birthday-cake logo-icon"></i>
+      <span class="logo-text">Birthday Card Maker</span>
+    </a>
+    <div class="powered-by">Powered by <span>SkillSphere</span></div>
+  </header>
+  
+  <!-- Main Content -->
   <div class="app-container">
     <header class="app-header">
       <h1 class="app-title">Premium Birthday Card Maker</h1>
@@ -608,7 +793,7 @@
       <div class="form-section">
         <h2 class="section-title">Photos & Captions</h2>
         <div class="upload-area" id="uploadArea">
-          <div class="upload-icon">📷</div>
+          <div class="upload-icon"><i class="fas fa-images"></i></div>
           <p class="upload-text">Click to upload photos</p>
           <p class="upload-subtext">(Up to 4 high-quality images)</p>
           <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
@@ -624,8 +809,8 @@
         <h2 class="section-title">Extras</h2>
         <div class="form-group">
           <label for="musicFile">Background Music (optional)</label>
-          <div class="upload-area" id="musicUploadArea" style="padding: 1.5rem;">
-            <div class="upload-icon">🎵</div>
+          <div class="upload-area" id="musicUploadArea" style="padding: 1rem;">
+            <div class="upload-icon"><i class="fas fa-music"></i></div>
             <p class="upload-text">Add a birthday song</p>
             <input type="file" id="musicFile" accept="audio/*" style="display: none;">
           </div>
@@ -634,11 +819,18 @@
       </div>
       
       <div class="btn-container">
-        <button class="btn" id="generateBtn"><span>Preview Card</span></button>
-        <button class="btn btn-secondary" id="resetBtn"><span>Reset Form</span></button>
+        <button class="btn" id="generateBtn"><i class="fas fa-eye"></i><span>Preview Card</span></button>
+        <button class="btn btn-secondary" id="resetBtn"><i class="fas fa-redo"></i><span>Reset Form</span></button>
       </div>
     </div>
   </div>
+  
+  <!-- Fixed Footer -->
+  <footer class="main-footer">
+    <div class="footer-content">
+      &copy; 2025 Birthday Card Maker | Made with <i class="fas fa-heart" style="color: var(--primary);"></i> by <a href="#" target="_blank">SkillSphere</a>
+    </div>
+  </footer>
   
   <!-- Card Preview Modal -->
   <div class="card-preview-container" id="previewModal">
@@ -662,8 +854,8 @@
       </div>
       
       <div class="btn-container" style="padding: 0 2rem 2rem;">
-        <button class="btn" id="downloadBtn"><span>Download as Image</span></button>
-        <button class="btn btn-secondary" id="shareBtn"><span>Share Online</span></button>
+        <button class="btn" id="downloadBtn"><i class="fas fa-download"></i><span>Download Card</span></button>
+        <button class="btn btn-secondary" id="shareBtn"><i class="fas fa-share-alt"></i><span>Share Online</span></button>
       </div>
     </div>
   </div>
@@ -925,7 +1117,7 @@
     
     function downloadCard() {
       // Show loading state
-      downloadBtn.innerHTML = '<span>Generating Image...</span>';
+      downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
       downloadBtn.disabled = true;
       
       // Hide buttons during capture
@@ -950,7 +1142,7 @@
         buttons.forEach(btn => btn.style.display = '');
         
         // Reset button state
-        downloadBtn.innerHTML = '<span>Download as Image</span>';
+        downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
         downloadBtn.disabled = false;
         
         // Show success effect
