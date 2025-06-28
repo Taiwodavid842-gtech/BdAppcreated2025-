@@ -1241,6 +1241,77 @@
     alert('Error generating image. Please try again.');
   });
 }
+    function downloadCard() {
+  // Show loading state
+  downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
+  downloadBtn.disabled = true;
+  
+  // Hide elements we don't want in the capture
+  const elementsToHide = [
+    document.getElementById('floatingElements'),
+    document.querySelector('.close-preview'),
+    document.querySelector('.btn-container')
+  ];
+  
+  // Store original display states
+  const originalDisplays = elementsToHide.map(el => el.style.display);
+  elementsToHide.forEach(el => el.style.display = 'none');
+  
+  // Get the preview content dimensions
+  const previewContent = document.getElementById('cardPreview');
+  const originalWidth = previewContent.scrollWidth;
+  const originalHeight = previewContent.scrollHeight;
+  
+  // Calculate scaled dimensions (60% of original)
+  const scale = 0.6;
+  const scaledWidth = originalWidth * scale;
+  const scaledHeight = originalHeight * scale;
+  
+  // Capture the card with optimized settings
+  html2canvas(previewContent, {
+    scale: scale,
+    width: scaledWidth,
+    height: scaledHeight,
+    logging: false,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null,
+    quality: 0.9,
+    scrollX: 0,
+    scrollY: 0,
+    windowWidth: originalWidth,
+    windowHeight: originalHeight
+  }).then(canvas => {
+    // Create download link
+    const link = document.createElement('a');
+    link.download = `birthday-wish-for-${celebrantName.value.trim() || 'friend'}.jpg`;
+    
+    // Convert to JPG for smaller file size (optional)
+    link.href = canvas.toDataURL('image/jpeg', 0.85);
+    link.click();
+    
+    // Restore hidden elements
+    elementsToHide.forEach((el, index) => {
+      el.style.display = originalDisplays[index];
+    });
+    
+    // Reset button state
+    downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
+    downloadBtn.disabled = false;
+    
+    // Show success effect
+    triggerConfetti();
+  }).catch(err => {
+    console.error('Error generating image:', err);
+    // Restore elements even if error occurs
+    elementsToHide.forEach((el, index) => {
+      el.style.display = originalDisplays[index];
+    });
+    downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
+    downloadBtn.disabled = false;
+    alert('Error generating image. Please try again.');
+  });
+    }
   </script>
 </body>
 </html>
