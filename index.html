@@ -1190,6 +1190,57 @@
     
     // Initialize floating elements
     createFloatingElements(4);
+    
+    function downloadCard() {
+  // Show loading state
+  downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
+  downloadBtn.disabled = true;
+  
+  // Hide elements we don't want in the capture
+  const floatingElements = document.getElementById('floatingElements');
+  const buttons = document.querySelectorAll('.card-preview .btn-container');
+  const originalDisplay = floatingElements.style.display;
+  
+  floatingElements.style.display = 'none';
+  buttons.forEach(btn => btn.style.display = 'none');
+  
+  // Capture the card with optimized settings
+  html2canvas(document.getElementById('cardPreview'), {
+    scale: 1.5, // Reduced from 2 for smaller file size
+    logging: false,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: null,
+    quality: 0.92, // Good balance between quality and size
+    windowWidth: document.getElementById('cardPreview').scrollWidth,
+    windowHeight: document.getElementById('cardPreview').scrollHeight
+  }).then(canvas => {
+    // Create download link
+    const link = document.createElement('a');
+    link.download = `birthday-card-${celebrantName.value.trim() || 'friend'}.png`;
+    link.href = canvas.toDataURL('image/png', 0.92); // 0.92 quality
+    link.click();
+    
+    // Restore hidden elements
+    floatingElements.style.display = originalDisplay;
+    buttons.forEach(btn => btn.style.display = '');
+    
+    // Reset button state
+    downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
+    downloadBtn.disabled = false;
+    
+    // Show success effect
+    triggerConfetti();
+  }).catch(err => {
+    console.error('Error generating image:', err);
+    // Restore elements even if error occurs
+    floatingElements.style.display = originalDisplay;
+    buttons.forEach(btn => btn.style.display = '');
+    downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
+    downloadBtn.disabled = false;
+    alert('Error generating image. Please try again.');
+  });
+}
   </script>
 </body>
 </html>
