@@ -1099,91 +1099,115 @@
     }
 
     function downloadCard() {
-      downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
-      downloadBtn.disabled = true;
-      
-      // Store original styles
-      const nameElement = document.getElementById('previewName');
-      const originalColor = nameElement.style.color;
-      const originalBackground = nameElement.style.background;
-      
-      // Temporarily change to solid color for capture
-      nameElement.style.background = 'none';
-      nameElement.style.color = '#FF6B6B'; // Solid color that will show in download
+  downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
+  downloadBtn.disabled = true;
 
-      // Hide floating elements and buttons
-      const elementsToHide = [
-        floatingElements,
-        document.querySelector('.close-preview'),
-        document.querySelector('.btn-container')
-      ];
+  // Store original styles
+  const nameElement = document.getElementById('previewName');
+  const originalColor = nameElement.style.color;
+  const originalBackground = nameElement.style.background;
+
+  // Temporarily change to solid color for capture
+  nameElement.style.background = 'none';
+  nameElement.style.color = '#FF6B6B';
+
+  // Hide floating elements and buttons
+  const elementsToHide = [
+    floatingElements,
+    document.querySelector('.close-preview'),
+    document.querySelector('.btn-container')
+  ];
+  
+  const originalDisplays = elementsToHide.map(el => el.style.display);
+  elementsToHide.forEach(el => el.style.display = 'none');
+
+  // Get the card content
+  const cardContent = document.getElementById('cardPreview');
+  const padding = 40;
+
+  // Create a clone of the card content to avoid modifying the original
+  const clone = cardContent.cloneNode(true);
+  clone.style.position = 'absolute';
+  clone.style.left = '-9999px';
+  clone.style.top = '0';
+  clone.style.opacity = '1';
+  clone.style.visibility = 'visible';
+  clone.style.transform = 'none';
+  document.body.appendChild(clone);
+
+  // Fix background for the clone
+  const bgElement = clone.querySelector('.preview-bg');
+  if (bgElement) {
+    bgElement.style.opacity = '1';
+  }
+
+  // Ensure all images are loaded
+  const images = clone.querySelectorAll('img');
+  const imagePromises = Array.from(images).map(img => {
+    if (img.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      img.onload = resolve;
+      img.onerror = resolve;
+    });
+  });
+
+  Promise.all(imagePromises).then(() => {
+    html2canvas(clone, {
+      scale: 2,
+      width: clone.scrollWidth + padding,
+      height: clone.scrollHeight + padding,
+      logging: false,
+      useCORS: true,
+      backgroundColor: '#ffffff', // Set white background
+      allowTaint: true,
+      foreignObjectRendering: true,
+      letterRendering: true,
+      onclone: function(document) {
+        // Ensure fonts are loaded
+        document.getElementById('previewName').style.fontFamily = "'Dancing Script', cursive";
+        document.getElementById('previewSignature').style.fontFamily = "'Dancing Script', cursive";
+      }
+    }).then(canvas => {
+      // Create download link
+      const link = document.createElement('a');
+      link.download = `birthday-card-for-${celebrantName.value.trim() || 'someone-special'}.jpg`;
+      link.href = canvas.toDataURL('image/jpeg', 0.95);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
-      const originalDisplays = elementsToHide.map(el => el.style.display);
-      elementsToHide.forEach(el => el.style.display = 'none');
+      // Clean up
+      document.body.removeChild(clone);
+
+      // Restore original styles
+      nameElement.style.background = originalBackground;
+      nameElement.style.color = originalColor;
       
-      // Capture the card content with higher quality settings
-      const cardContent = document.getElementById('cardPreview');
-      const padding = 40; // Increased padding to ensure no cropping
-      
-      html2canvas(cardContent, {
-        scale: 2, // Increased scale for higher resolution
-        width: cardContent.scrollWidth + padding,
-        height: cardContent.scrollHeight + padding,
-        scrollX: 0,
-        scrollY: 0,
-        logging: false,
-        useCORS: true,
-        backgroundColor: null,
-        quality: 1, // Maximum quality
-        letterRendering: true,
-        allowTaint: true,
-        foreignObjectRendering: true,
-        onclone: function(clonedDoc) {
-          // Ensure fonts are loaded before capture
-          clonedDoc.getElementById('previewName').style.fontFamily = "'Dancing Script', cursive";
-          clonedDoc.getElementById('previewSignature').style.fontFamily = "'Dancing Script', cursive";
-        }
-      }).then(canvas => {
-        // Create download link with higher quality JPEG
-        const link = document.createElement('a');
-        link.download = `birthday-card-for-${celebrantName.value.trim() || 'someone-special'}.jpg`;
-        link.href = canvas.toDataURL('image/jpeg', 1.0); // Highest quality JPEG
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Restore original styles
-        nameElement.style.background = originalBackground;
-        nameElement.style.color = originalColor;
-        
-        // Restore hidden elements
-        elementsToHide.forEach((el, index) => {
-          el.style.display = originalDisplays[index];
-        });
-        
-        // Reset button state
-        downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
-        downloadBtn.disabled = false;
-        
-        // Show success effect
-        triggerConfetti();
-      }).catch(err => {
-        console.error('Error generating image:', err);
-        // Restore original styles
-        nameElement.style.background = originalBackground;
-        nameElement.style.color = originalColor;
-        
-        // Restore elements if error occurs
-        elementsToHide.forEach((el, index) => {
-          el.style.display = originalDisplays[index];
-        });
-        
-        downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
-        downloadBtn.disabled = false;
-        alert('Error generating image. Please try again.');
+      // Restore hidden elements
+      elementsToHide.forEach((el, index) => {
+        el.style.display = originalDisplays[index];
       });
-    }
-
+      
+      // Reset button state
+      downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
+      downloadBtn.disabled = false;
+      
+      // Show success effect
+      triggerConfetti();
+    }).catch(err => {
+      console.error('Error generating image:', err);
+      document.body.removeChild(clone);
+      nameElement.style.background = originalBackground;
+      nameElement.style.color = originalColor;
+      elementsToHide.forEach((el, index) => {
+        el.style.display = originalDisplays[index];
+      });
+      downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
+      downloadBtn.disabled = false;
+      alert('Error generating image. Please try again.');
+    });
+  });
+}
     function shareCard() {
       if (navigator.share) {
         navigator.share({
