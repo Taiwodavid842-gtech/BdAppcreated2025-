@@ -828,7 +828,7 @@
   <!-- Fixed Footer -->
   <footer class="main-footer">
     <div class="footer-content">
-      &copy; 2025 Birthday Card Maker | Made with <i class="fas fa-heart" style="color: var(--primary);"></i> by <a href="#" target="_blank">SkillSphere</a>
+      &copy; 2025 Birthday Card Maker | Powered by <a href="#" target="_blank">SkillSphere</a>
     </div>
   </footer>
   
@@ -1098,6 +1098,7 @@ function closePreviewModal() {
   audioPlayer.pause();
 }
 
+
 function downloadCard() {
   downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
   downloadBtn.disabled = true;
@@ -1121,12 +1122,12 @@ function downloadCard() {
   const originalDisplays = elementsToHide.map(el => el.style.display);
   elementsToHide.forEach(el => el.style.display = 'none');
   
-  // Capture the card content
+  // Capture the card content with higher quality settings
   const cardContent = document.getElementById('cardPreview');
-  const padding = 20; // Extra pixels to ensure no cropping
+  const padding = 40; // Increased padding to ensure no cropping
   
   html2canvas(cardContent, {
-    scale: 0.8,
+    scale: 2, // Increased scale for higher resolution
     width: cardContent.scrollWidth + padding,
     height: cardContent.scrollHeight + padding,
     scrollX: 0,
@@ -1134,12 +1135,20 @@ function downloadCard() {
     logging: false,
     useCORS: true,
     backgroundColor: null,
-    quality: 0.9
+    quality: 1, // Maximum quality
+    letterRendering: true,
+    allowTaint: true,
+    foreignObjectRendering: true,
+    onclone: function(clonedDoc) {
+      // Ensure fonts are loaded before capture
+      clonedDoc.getElementById('previewName').style.fontFamily = "'Dancing Script', cursive";
+      clonedDoc.getElementById('previewSignature').style.fontFamily = "'Dancing Script', cursive";
+    }
   }).then(canvas => {
-    // Create download link
+    // Create download link with higher quality JPEG
     const link = document.createElement('a');
     link.download = `birthday-card-for-${celebrantName.value.trim() || 'someone-special'}.jpg`;
-    link.href = canvas.toDataURL('image/jpeg', 0.85);
+    link.href = canvas.toDataURL('image/jpeg', 1.0); // Highest quality JPEG
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
