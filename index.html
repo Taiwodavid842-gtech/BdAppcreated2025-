@@ -631,6 +631,101 @@
       }
     }
     
+    /* Quality Options Modal */
+    .quality-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+    }
+    
+    .quality-modal.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    
+    .quality-content {
+      background: white;
+      border-radius: 20px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      transform: translateY(20px);
+      transition: var(--transition);
+    }
+    
+    .quality-modal.show .quality-content {
+      transform: translateY(0);
+    }
+    
+    .quality-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--dark);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    
+    .quality-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .quality-option {
+      padding: 1rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    
+    .quality-option:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+    }
+    
+    .quality-option.selected {
+      border-color: var(--primary);
+      background: rgba(255, 107, 107, 0.1);
+    }
+    
+    .quality-option i {
+      font-size: 1.8rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .quality-option h3 {
+      font-size: 1rem;
+      margin-bottom: 0.3rem;
+      color: var(--dark);
+    }
+    
+    .quality-option p {
+      font-size: 0.8rem;
+      color: var(--text);
+      opacity: 0.8;
+    }
+    
+    .quality-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+    
     /* Footer */
     .main-footer {
       position: fixed;
@@ -701,6 +796,10 @@
       .powered-by {
         font-size: 0.8rem;
       }
+      
+      .quality-options {
+        grid-template-columns: 1fr;
+      }
     }
     
     @media (max-width: 480px) {
@@ -740,6 +839,26 @@
       .powered-by {
         display: none;
       }
+      
+      .quality-content {
+        padding: 1.5rem;
+      }
+    }
+    
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -795,7 +914,7 @@
         <div class="upload-area" id="uploadArea">
           <div class="upload-icon"><i class="fas fa-images"></i></div>
           <p class="upload-text">Click to upload photos</p>
-          <p class="upload-subtext">(Up to 4 high-quality images)</p>
+          <p class="upload-subtext">(Up to 4 high-quality images, min. 1000px recommended)</p>
           <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;">
         </div>
         <div class="image-preview" id="imagePreview"></div>
@@ -860,6 +979,39 @@
     </div>
   </div>
   
+  <!-- Quality Options Modal -->
+  <div class="quality-modal" id="qualityModal">
+    <div class="quality-content">
+      <h2 class="quality-title">Select Download Quality</h2>
+      <div class="quality-options" id="qualityOptions">
+        <div class="quality-option" data-quality="png" data-value="1">
+          <i class="fas fa-file-image"></i>
+          <h3>PNG (Best)</h3>
+          <p>Lossless quality, larger file</p>
+        </div>
+        <div class="quality-option selected" data-quality="jpg" data-value="0.95">
+          <i class="fas fa-file-image"></i>
+          <h3>High Quality</h3>
+          <p>Great quality, smaller file</p>
+        </div>
+        <div class="quality-option" data-quality="jpg" data-value="0.8">
+          <i class="fas fa-file-image"></i>
+          <h3>Medium Quality</h3>
+          <p>Good balance</p>
+        </div>
+        <div class="quality-option" data-quality="jpg" data-value="0.6">
+          <i class="fas fa-file-image"></i>
+          <h3>Standard Quality</h3>
+          <p>Smaller file size</p>
+        </div>
+      </div>
+      <div class="quality-buttons">
+        <button class="btn btn-secondary" id="cancelQuality">Cancel</button>
+        <button class="btn" id="confirmQuality">Download</button>
+      </div>
+    </div>
+  </div>
+  
   <script>
     // DOM Elements
     const celebrantName = document.getElementById('celebrantName');
@@ -885,10 +1037,18 @@
     const previewMessage = document.getElementById('previewMessage');
     const previewSignature = document.getElementById('previewSignature');
     const floatingElements = document.getElementById('floatingElements');
+    const qualityModal = document.getElementById('qualityModal');
+    const qualityOptions = document.getElementById('qualityOptions');
+    const cancelQuality = document.getElementById('cancelQuality');
+    const confirmQuality = document.getElementById('confirmQuality');
 
     // State
     let uploadedImages = [];
     let audioFile = null;
+    let selectedQuality = {
+      type: 'jpg',
+      value: 0.95
+    };
 
     // Event Listeners
     uploadArea.addEventListener('click', () => photoUpload.click());
@@ -898,8 +1058,25 @@
     generateBtn.addEventListener('click', generateCard);
     resetBtn.addEventListener('click', resetForm);
     closePreview.addEventListener('click', closePreviewModal);
-    downloadBtn.addEventListener('click', downloadCard);
+    downloadBtn.addEventListener('click', showQualityOptions);
     shareBtn.addEventListener('click', shareCard);
+    cancelQuality.addEventListener('click', closeQualityModal);
+    confirmQuality.addEventListener('click', downloadWithSelectedQuality);
+    
+    // Quality options selection
+    qualityOptions.addEventListener('click', (e) => {
+      const option = e.target.closest('.quality-option');
+      if (option) {
+        document.querySelectorAll('.quality-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        option.classList.add('selected');
+        selectedQuality = {
+          type: option.dataset.quality,
+          value: parseFloat(option.dataset.value)
+        };
+      }
+    });
 
     // Functions
     function handleImageUpload(e) {
@@ -909,33 +1086,61 @@
       
       createFloatingElements(files.length > 0 ? files.length : 4);
       
+      // Check image resolutions
+      let lowResWarningShown = false;
+      
       for (let i = 0; i < Math.min(files.length, 4); i++) {
         const file = files[i];
         const reader = new FileReader();
         
         reader.onload = function(event) {
-          const imgContainer = document.createElement('div');
-          imgContainer.className = 'preview-item';
-          
-          const img = document.createElement('img');
+          const img = new Image();
           img.src = event.target.result;
           
-          const removeBtn = document.createElement('button');
-          removeBtn.className = 'remove-btn';
-          removeBtn.innerHTML = '×';
-          removeBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            removeImage(i);
-          });
-          
-          imgContainer.appendChild(img);
-          imgContainer.appendChild(removeBtn);
-          imagePreview.appendChild(imgContainer);
-          
-          uploadedImages.push({
-            src: event.target.result,
-            file: file
-          });
+          img.onload = function() {
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'preview-item';
+            
+            // Show warning if image is low resolution
+            if (Math.max(img.width, img.height) < 1000 && !lowResWarningShown) {
+              alert('For best results, please use images with at least 1000px on the longest side. Your card quality may be affected.');
+              lowResWarningShown = true;
+              
+              // Add low-res indicator
+              const warningIcon = document.createElement('div');
+              warningIcon.className = 'low-res-warning';
+              warningIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+              warningIcon.style.position = 'absolute';
+              warningIcon.style.top = '6px';
+              warningIcon.style.left = '6px';
+              warningIcon.style.color = 'orange';
+              warningIcon.style.fontSize = '0.8rem';
+              imgContainer.appendChild(warningIcon);
+            }
+            
+            const previewImg = document.createElement('img');
+            previewImg.src = event.target.result;
+            previewImg.loading = 'lazy';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-btn';
+            removeBtn.innerHTML = '×';
+            removeBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              removeImage(i);
+            });
+            
+            imgContainer.appendChild(previewImg);
+            imgContainer.appendChild(removeBtn);
+            imagePreview.appendChild(imgContainer);
+            
+            uploadedImages.push({
+              src: event.target.result,
+              file: file,
+              width: img.width,
+              height: img.height
+            });
+          };
         };
         
         reader.readAsDataURL(file);
@@ -1009,43 +1214,60 @@
         return;
       }
       
-      previewName.textContent = celebrantName.value.trim();
-      applyTheme(birthdayTheme.value);
+      // Preload all images for better quality rendering
+      const preloadPromises = uploadedImages.map(img => preloadImage(img.src));
       
-      const message = birthdayMessage.value.trim() || 
-        'Wishing you a day filled with joy, laughter, and all the happiness you bring to others!';
-      previewMessage.innerHTML = formatMessage(message);
+      generateBtn.innerHTML = '<div class="spinner"></div><span>Generating Card...</span>';
+      generateBtn.disabled = true;
       
-      previewSignature.textContent = signature.value.trim() || 'Your Friend';
-      
-      previewGrid.innerHTML = '';
-      const captions = photoCaptions.value ? 
-        photoCaptions.value.split(',').map(c => c.trim()) : 
-        [];
-      
-      uploadedImages.forEach((img, index) => {
-        const card = document.createElement('div');
-        card.className = 'preview-card';
-        
-        const imgEl = document.createElement('img');
-        imgEl.src = img.src;
-        imgEl.loading = 'lazy';
-        
-        const caption = document.createElement('div');
-        caption.className = 'preview-caption';
-        caption.textContent = captions[index] || `Memory ${index + 1}`;
-        
-        card.appendChild(imgEl);
-        card.appendChild(caption);
-        previewGrid.appendChild(card);
-      });
-      
-      previewModal.classList.add('show');
-      document.body.style.overflow = 'hidden';
-      
-      if (!audioPlayer.paused) {
-        triggerConfetti();
-      }
+      Promise.all(preloadPromises)
+        .then(() => {
+          previewName.textContent = celebrantName.value.trim();
+          applyTheme(birthdayTheme.value);
+          
+          const message = birthdayMessage.value.trim() || 
+            'Wishing you a day filled with joy, laughter, and all the happiness you bring to others!';
+          previewMessage.innerHTML = formatMessage(message);
+          
+          previewSignature.textContent = signature.value.trim() || 'Your Friend';
+          
+          previewGrid.innerHTML = '';
+          const captions = photoCaptions.value ? 
+            photoCaptions.value.split(',').map(c => c.trim()) : 
+            [];
+          
+          uploadedImages.forEach((img, index) => {
+            const card = document.createElement('div');
+            card.className = 'preview-card';
+            
+            const imgEl = document.createElement('img');
+            imgEl.src = img.src;
+            imgEl.loading = 'lazy';
+            
+            const caption = document.createElement('div');
+            caption.className = 'preview-caption';
+            caption.textContent = captions[index] || `Memory ${index + 1}`;
+            
+            card.appendChild(imgEl);
+            card.appendChild(caption);
+            previewGrid.appendChild(card);
+          });
+          
+          previewModal.classList.add('show');
+          document.body.style.overflow = 'hidden';
+          
+          if (!audioPlayer.paused) {
+            triggerConfetti();
+          }
+        })
+        .catch(err => {
+          console.error('Error preloading images:', err);
+          alert('There was an error processing your images. Please try again.');
+        })
+        .finally(() => {
+          generateBtn.innerHTML = '<i class="fas fa-eye"></i><span>Preview Card</span>';
+          generateBtn.disabled = false;
+        });
     }
 
     function applyTheme(theme) {
@@ -1098,116 +1320,113 @@
       audioPlayer.pause();
     }
 
+    function showQualityOptions() {
+      qualityModal.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeQualityModal() {
+      qualityModal.classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    function downloadWithSelectedQuality() {
+      closeQualityModal();
+      downloadCard();
+    }
+
     function downloadCard() {
-  downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Generating Image...</span>';
-  downloadBtn.disabled = true;
-
-  // Store original styles
-  const nameElement = document.getElementById('previewName');
-  const originalColor = nameElement.style.color;
-  const originalBackground = nameElement.style.background;
-
-  // Temporarily change to solid color for capture
-  nameElement.style.background = 'none';
-  nameElement.style.color = '#FF6B6B';
-
-  // Hide floating elements and buttons
-  const elementsToHide = [
-    floatingElements,
-    document.querySelector('.close-preview'),
-    document.querySelector('.btn-container')
-  ];
-  
-  const originalDisplays = elementsToHide.map(el => el.style.display);
-  elementsToHide.forEach(el => el.style.display = 'none');
-
-  // Get the card content
-  const cardContent = document.getElementById('cardPreview');
-  const padding = 40;
-
-  // Create a clone of the card content to avoid modifying the original
-  const clone = cardContent.cloneNode(true);
-  clone.style.position = 'absolute';
-  clone.style.left = '-9999px';
-  clone.style.top = '0';
-  clone.style.opacity = '1';
-  clone.style.visibility = 'visible';
-  clone.style.transform = 'none';
-  document.body.appendChild(clone);
-
-  // Fix background for the clone
-  const bgElement = clone.querySelector('.preview-bg');
-  if (bgElement) {
-    bgElement.style.opacity = '1';
-  }
-
-  // Ensure all images are loaded
-  const images = clone.querySelectorAll('img');
-  const imagePromises = Array.from(images).map(img => {
-    if (img.complete) return Promise.resolve();
-    return new Promise(resolve => {
-      img.onload = resolve;
-      img.onerror = resolve;
-    });
-  });
-
-  Promise.all(imagePromises).then(() => {
-    html2canvas(clone, {
-      scale: 2,
-      width: clone.scrollWidth + padding,
-      height: clone.scrollHeight + padding,
-      logging: false,
-      useCORS: true,
-      backgroundColor: '#ffffff', // Set white background
-      allowTaint: true,
-      foreignObjectRendering: true,
-      letterRendering: true,
-      onclone: function(document) {
-        // Ensure fonts are loaded
-        document.getElementById('previewName').style.fontFamily = "'Dancing Script', cursive";
-        document.getElementById('previewSignature').style.fontFamily = "'Dancing Script', cursive";
-      }
-    }).then(canvas => {
-      // Create download link
-      const link = document.createElement('a');
-      link.download = `birthday-card-for-${celebrantName.value.trim() || 'someone-special'}.jpg`;
-      link.href = canvas.toDataURL('image/jpeg', 0.95);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      downloadBtn.innerHTML = '<div class="spinner"></div><span>Generating High-Quality Image...</span>';
+      downloadBtn.disabled = true;
       
-      // Clean up
-      document.body.removeChild(clone);
-
-      // Restore original styles
-      nameElement.style.background = originalBackground;
-      nameElement.style.color = originalColor;
+      // Store original styles
+      const nameElement = document.getElementById('previewName');
+      const originalColor = nameElement.style.color;
+      const originalBackground = nameElement.style.background;
       
-      // Restore hidden elements
-      elementsToHide.forEach((el, index) => {
-        el.style.display = originalDisplays[index];
+      // Temporarily change to solid color for better capture
+      nameElement.style.background = 'none';
+      nameElement.style.color = '#FF6B6B';
+
+      // Hide elements that shouldn't appear in the download
+      const elementsToHide = [
+        floatingElements,
+        document.querySelector('.close-preview'),
+        document.querySelector('.btn-container')
+      ];
+      
+      const originalDisplays = elementsToHide.map(el => el.style.display);
+      elementsToHide.forEach(el => el.style.display = 'none');
+
+      // Get the card content dimensions
+      const cardContent = document.getElementById('cardPreview');
+      const padding = 40; // Extra padding to prevent edge cropping
+      
+      // Calculate dimensions with high DPI support
+      const scale = 2 * (window.devicePixelRatio || 1);
+      const width = cardContent.offsetWidth + padding;
+      const height = cardContent.offsetHeight + padding;
+
+      // Capture the card with high quality settings
+      html2canvas(cardContent, {
+        scale: scale,
+        width: width,
+        height: height,
+        scrollX: 0,
+        scrollY: 0,
+        logging: false,
+        useCORS: true,
+        backgroundColor: '#FFFFFF', // Ensure white background
+        allowTaint: true,
+        letterRendering: true,
+        quality: 1 // Maximum quality for rendering
+      }).then(canvas => {
+        // Create download link with selected quality
+        const link = document.createElement('a');
+        const fileName = `birthday-card-for-${celebrantName.value.trim() || 'someone-special'}`;
+        
+        if (selectedQuality.type === 'png') {
+          link.download = `${fileName}.png`;
+          link.href = canvas.toDataURL('image/png');
+        } else {
+          link.download = `${fileName}.jpg`;
+          link.href = canvas.toDataURL('image/jpeg', selectedQuality.value);
+        }
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Restore original styles
+        nameElement.style.background = originalBackground;
+        nameElement.style.color = originalColor;
+        
+        // Restore hidden elements
+        elementsToHide.forEach((el, index) => {
+          el.style.display = originalDisplays[index];
+        });
+        
+        // Reset button state
+        downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
+        downloadBtn.disabled = false;
+        
+        // Show success effect
+        triggerConfetti();
+      }).catch(err => {
+        console.error('Error generating image:', err);
+        // Restore everything if error occurs
+        nameElement.style.background = originalBackground;
+        nameElement.style.color = originalColor;
+        elementsToHide.forEach((el, index) => {
+          el.style.display = originalDisplays[index];
+        });
+        
+        downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
+        downloadBtn.disabled = false;
+        alert('Error generating image. Please try again or use a different browser.');
       });
-      
-      // Reset button state
-      downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
-      downloadBtn.disabled = false;
-      
-      // Show success effect
-      triggerConfetti();
-    }).catch(err => {
-      console.error('Error generating image:', err);
-      document.body.removeChild(clone);
-      nameElement.style.background = originalBackground;
-      nameElement.style.color = originalColor;
-      elementsToHide.forEach((el, index) => {
-        el.style.display = originalDisplays[index];
-      });
-      downloadBtn.innerHTML = '<i class="fas fa-download"></i><span>Download Card</span>';
-      downloadBtn.disabled = false;
-      alert('Error generating image. Please try again.');
-    });
-  });
-}
+    }
+
     function shareCard() {
       if (navigator.share) {
         navigator.share({
@@ -1242,6 +1461,16 @@
       
       const musicUploadText = musicUploadArea.querySelector('.upload-text');
       musicUploadText.textContent = 'Add a birthday song';
+    }
+
+    // Helper function to preload images
+    function preloadImage(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = url;
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+      });
     }
 
     // Initialize floating elements
